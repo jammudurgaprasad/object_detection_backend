@@ -29,6 +29,14 @@ COCO_LABELS = {
 
 detector = hub.load("https://tfhub.dev/tensorflow/ssd_mobilenet_v2/fpnlite_320x320/1")
 
+# @api_view(['POST'])
+# def detect_objects(request):
+#     uploaded_file = request.FILES['image']
+#     path = default_storage.save(uploaded_file.name, uploaded_file)
+#     file_path = f"{settings.MEDIA_ROOT}/{path}"
+
+#     image_np = cv2.imread(file_path)
+#     image_np = cv2.resize(image_np, (640, 480))
 @api_view(['POST'])
 def detect_objects(request):
     uploaded_file = request.FILES['image']
@@ -36,6 +44,9 @@ def detect_objects(request):
     file_path = f"{settings.MEDIA_ROOT}/{path}"
 
     image_np = cv2.imread(file_path)
+    if image_np is None:
+        return Response({"error": "Failed to read uploaded image"}, status=400)
+
     image_np = cv2.resize(image_np, (640, 480))
     input_tensor = tf.convert_to_tensor(image_np, dtype=tf.uint8)[tf.newaxis, ...]
     detections = detector(input_tensor)
